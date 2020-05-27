@@ -2,7 +2,7 @@ import math
 
 TIME_INTERVAL_DAY = 1  # 时间片
 DAY_PER_YEAR = 365  # 一年的天数
-MAX_TIME_DAY = DAY_PER_YEAR * 100  # 环境最多运行的天数
+MAX_TIME_DAY = DAY_PER_YEAR * 5000  # 环境最多运行的天数
 REWARD_GAMMA = 0.99  # Exponentially Weighted Moving Average（指数加权滑动平均）方式计算 reward（奖赏）之和时所用的参数 gamma
 
 DEFAULT_HP = 100  # 每条公路的起始健康度
@@ -14,16 +14,19 @@ DEFAULT_STATUS = {
 }  # 每条公路的默认状态
 
 # 用字典代表每一条公路
+# 每天车流量约4-5次级
+# 每辆车收费月1-2次级
+# 每天总收费约5-6次级
 HIGHWAYS = [
-    {"name": "GF", "traffic": int(26575444 / DAY_PER_YEAR / 2), "toll": int(190837600 / 26575444), "note": "广佛高速公路"},
-    {"name": "FK", "traffic": int(23968177 / DAY_PER_YEAR / 2), "toll": int(569280800 / 23968177), "note": "佛开高速公路"},
-    {"name": "JG", "traffic": int(30170232 / DAY_PER_YEAR / 2), "toll": int(541588200 / 30170232), "note": "京珠高速公路广珠段"},
-    {"name": "GH", "traffic": int(21450514 / DAY_PER_YEAR / 2), "toll": int(800781100 / 21450514), "note": "广惠高速公路"},
-    {"name": "HY", "traffic": int(17044547 / DAY_PER_YEAR / 2), "toll": int(106159000 / 17044547), "note": "惠盐高速公路"},
-    {"name": "GZ", "traffic": int(14315677 / DAY_PER_YEAR / 2), "toll": int(289978900 / 14315677), "note": "广肇高速公路"},
-    {"name": "JZ", "traffic": int(20429959 / DAY_PER_YEAR / 2), "toll": int(196259200 / 20429959), "note": "江中高速公路"},
-    {"name": "KD", "traffic": int(1187605 / DAY_PER_YEAR / 2), "toll": int(115537300 / 1187605), "note": "康大高速"},
-    {"name": "GK", "traffic": int(1158072 / DAY_PER_YEAR / 2), "toll": int(73247800 / 1158072), "note": "赣康高速"},
+    {"name": "GF", "traffic": int(26575444 / DAY_PER_YEAR * 2), "toll": int(190837600 / 26575444), "note": "广佛高速公路"},
+    {"name": "FK", "traffic": int(23968177 / DAY_PER_YEAR * 2), "toll": int(569280800 / 23968177), "note": "佛开高速公路"},
+    {"name": "JG", "traffic": int(30170232 / DAY_PER_YEAR * 2), "toll": int(541588200 / 30170232), "note": "京珠高速公路广珠段"},
+    {"name": "GH", "traffic": int(21450514 / DAY_PER_YEAR * 2), "toll": int(800781100 / 21450514), "note": "广惠高速公路"},
+    {"name": "HY", "traffic": int(17044547 / DAY_PER_YEAR * 2), "toll": int(106159000 / 17044547), "note": "惠盐高速公路"},
+    {"name": "GZ", "traffic": int(14315677 / DAY_PER_YEAR * 2), "toll": int(289978900 / 14315677), "note": "广肇高速公路"},
+    {"name": "JZ", "traffic": int(20429959 / DAY_PER_YEAR * 2), "toll": int(196259200 / 20429959), "note": "江中高速公路"},
+    {"name": "KD", "traffic": int(1187605 / DAY_PER_YEAR * 2), "toll": int(115537300 / 1187605), "note": "康大高速"},
+    {"name": "GK", "traffic": int(1158072 / DAY_PER_YEAR * 2), "toll": int(73247800 / 1158072), "note": "赣康高速"},
 ]
 
 
@@ -49,7 +52,7 @@ ACTIONS = [
      "new_hp": lambda x: x + 10, "new_traffic": lambda tm, tfc: 0,
      "stoppable": False},
     {"name": "big", "cost": 200000, "time": 20,
-     "new_hp": lambda x: x + 10, "new_traffic": lambda tm, tfc: 0,
+     "new_hp": lambda x: x + 40, "new_traffic": lambda tm, tfc: 0,
      "stoppable": False},
     {"name": "remake", "cost": 500000, "time": 60,
      "new_hp": lambda x: 100, "new_traffic": lambda tm, tfc: 0,
@@ -100,7 +103,8 @@ def reward(traffic: int,
     """
     # 平均hp大约每日-0.1
     income = traffic * toll
-    return (income - cost) / 10000 + 10 * hp - 1000
+    # print([income * 0.05*10**(-5), - cost * 20*10**(-4), (hp - 90) * 10 * 0.1])
+    return income * 0.1*10**(-5) - cost * 12*10**(-4) + (hp - 90) * 10 * 0.3
 
 
 def traffic_to_aging_speed(traffic: float) -> float:
